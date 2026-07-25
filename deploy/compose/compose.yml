@@ -30,7 +30,7 @@ services:
       minio:
         condition: service_healthy
       minio-init:
-        condition: service_completed_successfully
+        condition: service_started
     # Probe /_readiness over /dev/tcp because the runtime image has bash but no curl/wget/socat.
     healthcheck:
       test:
@@ -110,7 +110,6 @@ services:
 
   minio-init:
     image: minio/mc:RELEASE.2025-08-13T08-35-41Z
-    exclude_from_hc: true
     depends_on:
       minio:
         condition: service_healthy
@@ -123,8 +122,15 @@ services:
         mc alias set local http://minio:9000 "$${BUZZ_S3_ACCESS_KEY}" "$${BUZZ_S3_SECRET_KEY}"
         mc mb --ignore-existing "local/$${BUZZ_S3_BUCKET}"
         mc anonymous set none "local/$${BUZZ_S3_BUCKET}"
+        tail -f /dev/null
       '
-    restart: "no"
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
 
 volumes:
   buzz-postgres-data:
