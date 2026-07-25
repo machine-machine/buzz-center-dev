@@ -46,6 +46,9 @@ services:
     networks:
       - buzz-net
       - coolify
+    labels:
+      - traefik.docker.network=coolify
+      - caddy_ingress_network=coolify
 
   postgres:
     image: postgres:17-alpine
