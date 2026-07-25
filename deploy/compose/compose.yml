@@ -30,7 +30,7 @@ services:
       minio:
         condition: service_healthy
       minio-init:
-        condition: service_started
+        condition: service_completed_successfully
     # Probe /_readiness over /dev/tcp because the runtime image has bash but no curl/wget/socat.
     healthcheck:
       test:
@@ -43,12 +43,8 @@ services:
       retries: 12
       start_period: 30s
     restart: unless-stopped
-    networks:
-      - buzz-net
-      - coolify
     labels:
       - traefik.enable=true
-      - traefik.docker.network=coolify
       - traefik.http.middlewares.gzip.compress=true
       - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
       - traefik.http.routers.http-0-garr583ydumecv3y5j89yy8t.entryPoints=http
@@ -80,8 +76,6 @@ services:
       retries: 12
       start_period: 10s
     restart: unless-stopped
-    networks:
-      - buzz-net
 
   redis:
     image: redis:7-alpine
@@ -97,8 +91,6 @@ services:
       retries: 12
       start_period: 5s
     restart: unless-stopped
-    networks:
-      - buzz-net
 
   minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z
@@ -115,11 +107,10 @@ services:
       retries: 12
       start_period: 10s
     restart: unless-stopped
-    networks:
-      - buzz-net
 
   minio-init:
     image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    exclude_from_hc: true
     depends_on:
       minio:
         condition: service_healthy
@@ -132,17 +123,8 @@ services:
         mc alias set local http://minio:9000 "$${BUZZ_S3_ACCESS_KEY}" "$${BUZZ_S3_SECRET_KEY}"
         mc mb --ignore-existing "local/$${BUZZ_S3_BUCKET}"
         mc anonymous set none "local/$${BUZZ_S3_BUCKET}"
-        tail -f /dev/null
       '
-    healthcheck:
-      test: ["CMD", "true"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 5s
-    restart: unless-stopped
-    networks:
-      - buzz-net
+    restart: "no"
 
 volumes:
   buzz-postgres-data:
@@ -157,11 +139,3 @@ volumes:
   buzz-git-data:
     labels:
       com.buzz.volume: git
-
-networks:
-  buzz-net:
-    driver: bridge
-    labels:
-      com.buzz.network: production
-  coolify:
-    external: true
