@@ -43,22 +43,6 @@ services:
       retries: 12
       start_period: 30s
     restart: unless-stopped
-    labels:
-      - traefik.enable=true
-      - traefik.http.middlewares.gzip.compress=true
-      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-      - traefik.http.routers.http-0-${COOLIFY_RESOURCE_UUID}.entryPoints=http
-      - traefik.http.routers.http-0-${COOLIFY_RESOURCE_UUID}.middlewares=gzip
-      - traefik.http.routers.http-0-${COOLIFY_RESOURCE_UUID}.rule=Host(`${COOLIFY_FQDN}`) && PathPrefix(`/`)
-      - traefik.http.routers.http-0-${COOLIFY_RESOURCE_UUID}.service=http-0-${COOLIFY_RESOURCE_UUID}
-      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}.entryPoints=https
-      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}.middlewares=gzip
-      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}.rule=Host(`${COOLIFY_FQDN}`) && PathPrefix(`/`)
-      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}.service=https-0-${COOLIFY_RESOURCE_UUID}
-      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}.tls=true
-      - traefik.http.routers.https-0-${COOLIFY_RESOURCE_UUID}.tls.certresolver=letsencrypt
-      - traefik.http.services.http-0-${COOLIFY_RESOURCE_UUID}.loadbalancer.server.port=3000
-      - traefik.http.services.https-0-${COOLIFY_RESOURCE_UUID}.loadbalancer.server.port=3000
 
   postgres:
     image: postgres:17-alpine
