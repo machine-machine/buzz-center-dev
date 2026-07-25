@@ -1,6 +1,25 @@
 name: buzz-prod
 
 services:
+  ingress:
+    image: alpine/socat:latest
+    command: ["TCP-LISTEN:80,fork,reuseaddr", "TCP:relay:3000"]
+    depends_on:
+      relay:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - buzz-net
+      - coolify
+    labels:
+      traefik.enable: "true"
+      traefik.http.middlewares.gzip.compress: "true"
+      traefik.http.routers.http-0-buzz-center.entryPoints: http
+      traefik.http.routers.http-0-buzz-center.middlewares: gzip
+      traefik.http.routers.http-0-buzz-center.rule: Host(`center.m-2.cc`) && PathPrefix(`/`)
+      traefik.http.routers.http-0-buzz-center.service: http-0-buzz-center
+      traefik.http.services.http-0-buzz-center.loadbalancer.server.port: "80"
+
   relay:
     image: ${BUZZ_IMAGE:-ghcr.io/block/buzz:main}
     env_file:
@@ -144,3 +163,5 @@ networks:
     driver: bridge
     labels:
       com.buzz.network: production
+  coolify:
+    external: true
