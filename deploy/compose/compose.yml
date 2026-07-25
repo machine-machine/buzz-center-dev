@@ -45,6 +45,23 @@ services:
     restart: unless-stopped
     networks:
       - buzz-net
+      - coolify
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-garr583ydumecv3y5j89yy8t.entryPoints=http
+      - traefik.http.routers.http-0-garr583ydumecv3y5j89yy8t.middlewares=gzip
+      - traefik.http.routers.http-0-garr583ydumecv3y5j89yy8t.rule=Host(`center-dev.machinemachine.ai`) && PathPrefix(`/`)
+      - traefik.http.routers.http-0-garr583ydumecv3y5j89yy8t.service=http-0-garr583ydumecv3y5j89yy8t
+      - traefik.http.routers.https-0-garr583ydumecv3y5j89yy8t.entryPoints=https
+      - traefik.http.routers.https-0-garr583ydumecv3y5j89yy8t.middlewares=gzip
+      - traefik.http.routers.https-0-garr583ydumecv3y5j89yy8t.rule=Host(`center-dev.machinemachine.ai`) && PathPrefix(`/`)
+      - traefik.http.routers.https-0-garr583ydumecv3y5j89yy8t.service=https-0-garr583ydumecv3y5j89yy8t
+      - traefik.http.routers.https-0-garr583ydumecv3y5j89yy8t.tls=true
+      - traefik.http.routers.https-0-garr583ydumecv3y5j89yy8t.tls.certresolver=letsencrypt
+      - traefik.http.services.http-0-garr583ydumecv3y5j89yy8t.loadbalancer.server.port=3000
+      - traefik.http.services.https-0-garr583ydumecv3y5j89yy8t.loadbalancer.server.port=3000
 
   postgres:
     image: postgres:17-alpine
@@ -138,3 +155,5 @@ networks:
     driver: bridge
     labels:
       com.buzz.network: production
+  coolify:
+    external: true
